@@ -3,8 +3,19 @@ import { Link } from "react-router-dom";
 import { connect } from "react-redux";
 import { userActions } from "../_actions";
 
-import { Navbar, Nav, Table, Pagination } from "react-bootstrap";
+import {
+  Navbar,
+  Nav,
+  // BootstrapTable,
+  Table,
+  Pagination,
+} from "react-bootstrap";
 import { useEffect } from "react";
+import "bootstrap/dist/css/bootstrap.min.css";
+import "react-bootstrap-table-next/dist/react-bootstrap-table2.css";
+import "react-bootstrap-table2-paginator/dist/react-bootstrap-table2-paginator.min.css";
+import BootstrapTable from "react-bootstrap-table-next";
+import paginationFactory from "react-bootstrap-table2-paginator";
 function Auditpage(props) {
   const { user, users } = props;
 
@@ -15,7 +26,57 @@ function Auditpage(props) {
   const handleDeleteUser = (id) => {
     return (e) => props.deleteUser(id);
   };
-  console.log("no_of_pages", users.no_of_pages);
+  const usersData = users.items;
+  // const usersData = users.items.map((user, index) => ({ ...user }));
+  const columns = [
+    { dataField: "id", text: "Id", sort: true },
+    { dataField: "role", text: "Role", sort: true },
+    { dataField: "createdDate", text: "Created Date", sort: true },
+    { dataField: "firstName", text: "First Name", sort: true },
+    { dataField: "lastName", text: "Last Name", sort: true },
+    {
+      dataField: "deleting",
+      text: "Deleting",
+      sort: true,
+      render: (user) => {
+        user.deleting ? (
+          <em> - Deleting...</em>
+        ) : user.deleteError ? (
+          <span className="text-danger">- ERROR: {user.deleteError}</span>
+        ) : (
+          <span>
+            - <a onClick={handleDeleteUser(user.id)}>Delete</a>
+          </span>
+        );
+      },
+    },
+  ];
+
+  const defaultSorted = [
+    {
+      dataField: "role",
+      order: "desc",
+    },
+  ];
+
+  const pagination = paginationFactory({
+    page: 2,
+    sizePerPage: 5,
+    lastPageText: ">>",
+    firstPageText: "<<",
+    nextPageText: ">",
+    prePageText: "<",
+    showTotal: true,
+    alwaysShowAllBtns: true,
+    onPageChange: function (page, sizePerPage) {
+      console.log("page", page);
+      console.log("sizePerPage", sizePerPage);
+    },
+    onSizePerPageChange: function (page, sizePerPage) {
+      console.log("page", page);
+      console.log("sizePerPage", sizePerPage);
+    },
+  });
 
   return (
     <div>
@@ -40,56 +101,51 @@ function Auditpage(props) {
           <span className="text-danger">ERROR: {users.error}</span>
         )}
         {users.items && (
-          <Table striped bordered hover>
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Role</th>
-                <th>Created Date</th>
-                <th>User Name</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.items.map((user, index) => (
-                <tr key={user.id}>
-                  <td>{user.id}</td>
-                  <td>{user.role}</td>
-                  <td>{user.createdDate}</td>
-                  <td> {user.firstName + " " + user.lastName}</td>
-                  <td>
-                    {user.deleting ? (
-                      <em> - Deleting...</em>
-                    ) : user.deleteError ? (
-                      <span className="text-danger">
-                        - ERROR: {user.deleteError}
-                      </span>
-                    ) : (
-                      <span>
-                        - <a onClick={handleDeleteUser(user.id)}>Delete</a>
-                      </span>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </Table>
+          <BootstrapTable
+            bootstrap4
+            keyField="id"
+            data={usersData}
+            columns={columns}
+            defaultSorted={defaultSorted}
+            pagination={pagination}
+          />
+
+          // <Table striped bordered hover>
+          //   <thead>
+          //     <tr>
+          //       <th>ID</th>
+          //       <th>Role</th>
+          //       <th>Created Date</th>
+          //       <th>User Name</th>
+          //       <th>Status</th>
+          //     </tr>
+          //   </thead>
+          //   <tbody>
+          //     {users.items.map((user, index) => (
+          //       <tr key={user.id}>
+          //         <td>{user.id}</td>
+          //         <td>{user.role}</td>
+          //         <td>{user.createdDate}</td>
+          //         <td> {user.firstName + " " + user.lastName}</td>
+          //         <td>
+          // {user.deleting ? (
+          //   <em> - Deleting...</em>
+          // ) : user.deleteError ? (
+          //   <span className="text-danger">
+          //     - ERROR: {user.deleteError}
+          //   </span>
+          // ) : (
+          //   <span>
+          //     - <a onClick={handleDeleteUser(user.id)}>Delete</a>
+          //   </span>
+          // )}
+          //         </td>
+          //       </tr>
+          //     ))}
+          //   </tbody>
+          // </Table>
         )}
-        <Pagination>
-          <Pagination.First />
-          {/* <Pagination.Prev /> */}
-          <Pagination.Item active>{1}</Pagination.Item>
-          <Pagination.Item>{2}</Pagination.Item>
-          <Pagination.Ellipsis />
 
-          <Pagination.Item>{10}</Pagination.Item>
-          <Pagination.Item>{11}</Pagination.Item>
-
-          <Pagination.Ellipsis />
-          <Pagination.Item>{20}</Pagination.Item>
-          {/* <Pagination.Next /> */}
-          <Pagination.Last />
-        </Pagination>
         {/* {users.items && (
           <ul className="user-screen">
             {users.items.map((user, index) => (
